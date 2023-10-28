@@ -49,7 +49,28 @@ export const consultUserByNameUser = async (req: Request, res: Response) =>{ //b
 
 export const saveUser = async (req: Request, res: Response) =>{ //creacion de usuarios
 
-    let { names, nameUser, email, password, id_rol } = req.body;   
+    let { names, nameUser, email, password, id_rol } = req.body; 
+    
+
+    function validateData(nameUser):object{  
+        return User.findOne({
+            where: {
+                nameUser
+            }
+        })
+    }
+
+    if (!names) {
+        return res.status(200).json({
+            msg: `Por favor digite un nombre`
+        })
+    }
+
+    if (validateData(nameUser)) {
+        return res.status(200).json({
+            msg: `El nombre de usuario que eligió ya existe`
+        })
+    }
 
     const salt = bcrypt.genSaltSync();
     password = bcrypt.hashSync(password, salt);
