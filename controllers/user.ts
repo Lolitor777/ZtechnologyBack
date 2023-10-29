@@ -2,6 +2,14 @@ import { Request, Response } from 'express';
 import User from '../models/user';
 import bcrypt from 'bcryptjs'
 
+async function validateData(data: string, columnName: string) {
+    return await User.findOne({
+        where: {
+            columnName: data
+        }
+    })
+}
+
 export const consultUser = async (req: Request, res: Response) =>{
 
     const user = await User.findAll();
@@ -49,37 +57,42 @@ export const consultUserByNameUser = async (req: Request, res: Response) =>{ //b
 
 export const saveUser = async (req: Request, res: Response) =>{ //creacion de usuarios
 
-    let { names, nameUser, email, password, id_rol } = req.body; 
-    
+    try {
+        
+        let { names, nameUser, email, password, id_rol } = req.body;
 
-    function validateData(nameUser):object{  
-        return User.findOne({
-            where: {
-                nameUser
-            }
+        const userExist = await validateData(nameUser, 'nameUser')
+        console.log("datos" + userExist)
+        console.log(names, nameUser, email, password, id_rol);
+        
+
+        if (userExist) {
+            return res.status(200).json({
+                msg: `El nombre de usuario que eligió ya existe`
+            })
+        }
+
+        if (!names || !nameUser || !email || !password || !id_rol) {
+            return res.status(200).json({
+                msg: `Por favor complete todos los datos`
+            })
+        }
+
+        const salt = bcrypt.genSaltSync();
+        password = bcrypt.hashSync(password, salt);
+
+        const user = await User.create({ names, nameUser, email, password, id_rol });
+
+        res.status(200).json({
+            msg: `Se ha creado el usuario ${nameUser} correctamente!!`
+        })
+
+    } catch (error) {
+        console.error(`error al crear usuario`)
+        res.status(500).json({
+            msg: `error al crear usuario`
         })
     }
-
-    if (!names) {
-        return res.status(200).json({
-            msg: `Por favor digite un nombre`
-        })
-    }
-
-    if (validateData(nameUser)) {
-        return res.status(200).json({
-            msg: `El nombre de usuario que eligió ya existe`
-        })
-    }
-
-    const salt = bcrypt.genSaltSync();
-    password = bcrypt.hashSync(password, salt);
-
-    const user = await User.create({ names, nameUser, email, password, id_rol });
-
-    res.status(200).json({
-        msg: `Se ha creado el usuario ${nameUser} correctamente!!`
-    })
 }
 
 export const updatePassword = async (req: Request, res: Response) => { //cambio de contrasenia de un usuario
