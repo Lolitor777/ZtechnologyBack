@@ -21,7 +21,12 @@ export const login = async (req: Request, res: Response) => {
         })
       }
 
-      const validPassword = bcrypt.compareSync(password, login.dataValues.password);
+      const validPassword = await User.findOne({
+        where: {
+          email,
+          password
+        }
+      })
 
       if (!validPassword) {
         return res.status(400).json({

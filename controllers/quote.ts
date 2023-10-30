@@ -1,9 +1,27 @@
 import { Request, Response } from 'express';
 import Quote from '../models/quote';
+import Product from '../models/product';
+import Customer from '../models/customer';
+import User from '../models/user';
 
-export const consultQuote = async (req: Request, res: Response) =>{
 
-    const quote = await Quote.findAll();
+export const consultQuote = async (req: Request, res: Response) =>{ //consultar cotizaciones
+
+    const quote = await Quote.findAll({
+       attributes: ['numeration', 'shipping_price', 'state', 'amount_discount', 'porcentage_discount', 'sub_total', 'total'],
+       include: [{
+            model: Product,
+            attributes: ['description']
+       },
+        {
+            model: User,
+            attributes: ['names']
+        },
+        {
+            model: Customer,
+            attributes: ['name']
+        }]
+    });
 
     res.status(200).json({
         msg: 'Bienvenido a la ventana de cotizaciones',
@@ -14,6 +32,19 @@ export const consultQuote = async (req: Request, res: Response) =>{
 export const consultActiveQuote = async (req: Request, res: Response) =>{
 
     const quote = await Quote.findAll({
+        attributes: ['numeration', 'shipping_price', 'amount_discount', 'porcentage_discount', 'sub_total', 'total'],
+       include: [{
+            model: Product,
+            attributes: ['description']
+       },
+        {
+            model: User,
+            attributes: ['names']
+        },
+        {
+            model: Customer,
+            attributes: ['name']
+        }],
         where: {
             state: 1
         }
@@ -49,19 +80,20 @@ export const consultQuoteById = async (req: Request, res: Response) => {
 
 export const saveQuote = async (req: Request, res: Response) => {
 
-    const { numeration, 
-            shipping_price, 
-            sub_total, 
-            total, 
+    let { numeration, 
+            shipping_price,  
             state, 
             amount_discount, 
-            porcentage_discount, 
+            porcentage_discount,
+            total,
             id_product, 
             id_user,
             id_customer 
         } = req.body;
+    
 
-    const quote = await Quote.create({ numeration, shipping_price, sub_total, total, state, amount_discount, porcentage_discount, 
+
+    const quote = await Quote.create({ numeration, shipping_price, state, amount_discount, porcentage_discount, total, 
         id_product, id_user, id_customer });
 
     res.status(200).json({

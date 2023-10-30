@@ -13,14 +13,6 @@ const Quote = db.define('quote', {
         type: DataTypes.INTEGER
     },
 
-    sub_total: {
-        type: DataTypes.INTEGER
-    },
-
-    total: {
-        type: DataTypes.INTEGER
-    },
-
     state: {
         type: DataTypes.BOOLEAN
     },
@@ -30,6 +22,14 @@ const Quote = db.define('quote', {
     },
 
     porcentage_discount: {
+        type: DataTypes.INTEGER
+    },
+
+    sub_total: {
+        type: DataTypes.INTEGER
+    },
+
+    total: {
         type: DataTypes.INTEGER
     },
 

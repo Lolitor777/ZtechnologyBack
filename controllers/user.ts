@@ -1,18 +1,18 @@
 import { Request, Response } from 'express';
 import User from '../models/user';
-import bcrypt from 'bcryptjs'
+import Rol from '../models/rol';
 
-async function validateData(data: string, columnName: string) {
-    return await User.findOne({
-        where: {
-            columnName: data
-        }
-    })
-}
+
 
 export const consultUser = async (req: Request, res: Response) =>{
 
-    const user = await User.findAll();
+    const user = await User.findAll({
+        attributes: ['id', 'names', 'nameUser', 'email', 'password', 'state'],
+        include: [{
+            model: Rol,
+            attributes: ['name']
+        }]
+    });
     
     res.status(200).json({
         msg: 'Bienvenido a la ventana de usuarios',
@@ -23,13 +23,18 @@ export const consultUser = async (req: Request, res: Response) =>{
 export const consultActiveUser = async (req: Request, res: Response) =>{
 
     const user = await User.findAll({
+        attributes: ['id', 'names', 'nameUser', 'email', 'password'],
+        include: [{
+            model: Rol,
+            attributes: ['name']
+        }],
         where: {
             state: 1
         }
     });
     
     res.status(200).json({
-        msg: 'Bienvenido a la ventana de usuarios',
+        msg: 'Bienvenido a la ventana de usuarios activos',
         user
     })
 }
@@ -38,6 +43,11 @@ export const consultUserByNameUser = async (req: Request, res: Response) =>{ //b
 
     const { nameUser } = req.params;
     const user = await User.findAll({
+        attributes: ['id', 'names', 'nameUser', 'email', 'password', 'state'],
+        include: [{
+            model: Rol,
+            attributes: ['name']
+        }],
         where: {
             nameUser
         }
@@ -49,55 +59,97 @@ export const consultUserByNameUser = async (req: Request, res: Response) =>{ //b
         })
     }
     else {
-        res.status(404).json({
+        res.status(200).json({
             msg: `El usuario con el nombre ${nameUser} no existe`
         })
     }
 }
 
 export const saveUser = async (req: Request, res: Response) =>{ //creacion de usuarios
-
-    try {
         
-        let { names, nameUser, email, password, id_rol } = req.body;
+    let { names, nameUser, email, password, id_rol } = req.body;
+    
+    if (!names || !nameUser || !email || !password || !id_rol) {
+        return res.status(200).json({
+            msg: `Por favor rellene todos los campos`
+        })        
+    }
 
-        const userExist = await validateData(nameUser, 'nameUser')
-        console.log("datos" + userExist)
-        console.log(names, nameUser, email, password, id_rol);
-        
-
-        if (userExist) {
-            return res.status(200).json({
-                msg: `El nombre de usuario que eligió ya existe`
-            })
+    const validateNameUser = await User.findOne({
+        where: {
+            nameUser
         }
+    })
 
-        if (!names || !nameUser || !email || !password || !id_rol) {
-            return res.status(200).json({
-                msg: `Por favor complete todos los datos`
-            })
-        }
-
-        const salt = bcrypt.genSaltSync();
-        password = bcrypt.hashSync(password, salt);
-
-        const user = await User.create({ names, nameUser, email, password, id_rol });
-
-        res.status(200).json({
-            msg: `Se ha creado el usuario ${nameUser} correctamente!!`
-        })
-
-    } catch (error) {
-        console.error(`error al crear usuario`)
-        res.status(500).json({
-            msg: `error al crear usuario`
+    if (validateNameUser) {
+        return res.status(200).json({
+            msg: `El nombre de usuario ${nameUser} no está disponible`
         })
     }
-}
+
+    const validateEmail = await User.findOne({
+        where: {
+            email
+        }
+    })
+
+    if (validateEmail) {
+        return res.status(200).json({
+            msg: `El correo electrónico ${email} no está disponible`
+        })
+    }
+
+    if (password.length < 8) {
+        return res.status(200).json({
+            msg: `Por favor digite una contraseña que contenga 8 dígitos o más`
+        })
+    }
+
+    if (id_rol == 0 || id_rol > 2) {
+        return res.status(200).json({
+            msg: `El rol que está asignando no existe`
+        })
+    }
+
+    const user = await User.create({ names, nameUser, email, password, id_rol });
+
+    res.status(200).json({
+        msg: `Se ha creado el usuario ${nameUser} correctamente!!`
+    })
+
+} 
+
 
 export const updatePassword = async (req: Request, res: Response) => { //cambio de contrasenia de un usuario
 
     let {nameUser, password} = req.body;
+
+    nameUser.trim();
+    password.trim();
+
+    if(!nameUser || !password){
+        return res.status(200).json({
+            msg: `Por favor rellene ambos campos`
+        })
+    }
+
+    const validateNameUser = await User.findOne({
+        where: {
+            nameUser
+        }
+    })
+
+    if (!validateNameUser) {
+        return res.status(200).json({
+            msg: `El nombre de usuario ${nameUser} no existe`
+        })
+    }
+
+    if (password.length < 8) {
+        return res.status(200).json({
+            msg: `Por favor digite una contraseña que contenga 8 dígitos o más`
+        })
+    }
 
     const user = await User.update({ password },{ 
         where: {
@@ -145,9 +197,21 @@ export const assignRol = async (req: Request, res: Response) => { //asignación 
 
 export const modifyData = async (req: Request, res: Response) => { //modificación de datos de un admin a gestores
 
-    const { names, nameUser, email, password, state } = req.body;
+    const { names, nameUser, email, password, state, id_rol } = req.body;
 
-    const user = await User.update({ names, email, password, state }, {
+    const validateNameUser = await User.findOne({
+        where: {
+            nameUser
+        }
+    })
+
+    if (!validateNameUser) {
+        return res.status(200).json({
+            msg: `El nombre de usuario ${nameUser} no existe`
+        })
+    }
+
+    const user = await User.update({ names, email, password, state, id_rol }, {
         where: {
             nameUser
         }
@@ -161,8 +225,20 @@ export const modifyData = async (req: Request, res: Response) => { //modificaci�
 export const deleteUser = async (req:Request, res: Response) => {
 
     const { id } = req.params;
-    const state = 0;
+    
+    const validateId = await User.findOne({
+        where: {
+            id
+        }
+    })
 
+    if (!validateId) {
+        return res.status(200).json({
+            msg: `El usuario con el id ${id} no existe`
+        })
+    }
+      
+    const state = 0;
     await User.update({ state }, {
         where: {
             id
