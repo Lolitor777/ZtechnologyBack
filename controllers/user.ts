@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import User from '../models/user';
 import Rol from '../models/rol';
+import { validateNameUser } from '../helpers/validations';
+
 
 
 
@@ -75,17 +78,23 @@ export const saveUser = async (req: Request, res: Response) =>{ //creacion de us
         })        
     }
 
-    const validateNameUser = await User.findOne({
-        where: {
-            nameUser
-        }
-    })
+    
+    validateNameUser(nameUser, User)
+    
+    
+    
+    
+    // const validateNameUser = await User.findOne({
+    //     where: {
+    //         nameUser
+    //     }
+    // })
 
-    if (validateNameUser) {
-        return res.status(200).json({
-            msg: `El nombre de usuario ${nameUser} no está disponible`
-        })
-    }
+    // if (validateNameUser) {
+    //     return res.status(200).json({
+    //         msg: `El nombre de usuario ${nameUser} no está disponible`
+    //     })
+    // }
 
     const validateEmail = await User.findOne({
         where: {
@@ -104,6 +113,9 @@ export const saveUser = async (req: Request, res: Response) =>{ //creacion de us
             msg: `Por favor digite una contraseña que contenga 8 dígitos o más`
         })
     }
+
+    const salt = bcrypt.genSaltSync();
+    password =  bcrypt.hashSync(password, salt);
 
     if (id_rol == 0 || id_rol > 2) {
         return res.status(200).json({
@@ -150,6 +162,9 @@ export const updatePassword = async (req: Request, res: Response) => { //cambio 
             msg: `Por favor digite una contraseña que contenga 8 dígitos o más`
         })
     }
+
+    const salt = bcrypt.genSaltSync();
+    password =  bcrypt.hashSync(password, salt);
 
     const user = await User.update({ password },{ 
         where: {
