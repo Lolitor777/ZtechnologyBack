@@ -47,16 +47,16 @@ const Quote = db.define('quote', {
 })
 
 
-Quote.hasMany(Product, {
-    foreignKey: 'id'
+Quote.belongsTo(Product, {
+    foreignKey: 'id_product'
 })
 
 Quote.belongsTo(User, {
-    foreignKey: 'id'
+    foreignKey: 'id_user'
 })
 
 Quote.belongsTo(Customer, {
-    foreignKey: 'id'
+    foreignKey: 'id_customer'
 })
 
 export default Quote;

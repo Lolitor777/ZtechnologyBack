@@ -24,12 +24,12 @@ const User = db.define('user', {
     },
 
     id_rol: {
-        type: DataTypes.INTEGER
+        type: DataTypes.BIGINT
     }
 }) 
 
 User.belongsTo(Rol, {
-    foreignKey: 'id'
+    foreignKey: "id_rol"
 })
 
 export default User;

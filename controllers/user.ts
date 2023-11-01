@@ -2,9 +2,6 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import User from '../models/user';
 import Rol from '../models/rol';
-import { validateNameUser } from '../helpers/validations';
-
-
 
 
 export const consultUser = async (req: Request, res: Response) =>{
@@ -77,13 +74,9 @@ export const saveUser = async (req: Request, res: Response) =>{ //creacion de us
             msg: `Por favor rellene todos los campos`
         })        
     }
+     
+    
 
-    
-    validateNameUser(nameUser, User)
-    
-    
-    
-    
     // const validateNameUser = await User.findOne({
     //     where: {
     //         nameUser
@@ -136,26 +129,24 @@ export const updatePassword = async (req: Request, res: Response) => { //cambio 
 
     let {nameUser, password} = req.body;
 
-    nameUser.trim();
-    password.trim();
-
     if(!nameUser || !password){
         return res.status(200).json({
             msg: `Por favor rellene ambos campos`
         })
     }
 
-    const validateNameUser = await User.findOne({
-        where: {
-            nameUser
-        }
-    })
+    
+    // const validateNameUser = await User.findOne({
+    //     where: {
+    //         nameUser
+    //     }
+    // })
 
-    if (!validateNameUser) {
-        return res.status(200).json({
-            msg: `El nombre de usuario ${nameUser} no existe`
-        })
-    }
+    // if (!validateNameUser) {
+    //     return res.status(200).json({
+    //         msg: `El nombre de usuario ${nameUser} no existe`
+    //     })
+    // }
 
     if (password.length < 8) {
         return res.status(200).json({
@@ -212,7 +203,7 @@ export const assignRol = async (req: Request, res: Response) => { //asignación 
 
 export const modifyData = async (req: Request, res: Response) => { //modificación de datos de un admin a gestores
 
-    const { names, nameUser, email, password, state, id_rol } = req.body;
+    const { names, nameUser, email, password, state, id_rol } = req.body; 
 
     const validateNameUser = await User.findOne({
         where: {

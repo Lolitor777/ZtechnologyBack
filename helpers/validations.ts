@@ -1,10 +1,4 @@
-import { Request, Response } from "express";
-
-
-
-
 export const validateNameUser =  async (nameUser: object, user: any) => {
-    try {
         const validateNameUser = await user.findOne({
             where: {
                 nameUser
@@ -12,15 +6,11 @@ export const validateNameUser =  async (nameUser: object, user: any) => {
         })
     
         if (validateNameUser) {
-            console.log(`El nombre de usuario ${nameUser} no está disponible`);   
+            console.log(`El nombre de usuario ${nameUser} no está disponible`);
+            
         }
-
-        return 0;
-    } catch (error) {
-        console.log(error);
-    }
+    } 
     
-}
 
 
 
