@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import Customer from '../models/customer';
-
+import { validateDocument, validateEmail } from '../helpers/validations';
 
 export const consultCustomer = async (req: Request, res: Response) =>{  //consultar todos los clientes
 
@@ -34,15 +34,11 @@ export const consultCustomerByDocument = async (req: Request, res: Response) =>{
 
     const { document_number } = req.params;
 
-    const validateDocument = await Customer.findOne({
-        where: {
-            document_number
-        }
-    })
+    const validationDocument = await validateDocument(document_number, Customer)
 
-    if (!validateDocument) {
-        return res.status(200).json({
-            msg: `El numero de documento ${document_number} no se encuentra registrado`
+    if (validationDocument) {
+        return res.status(400).json({
+            msg: validationDocument
         })
     }
 
@@ -55,12 +51,12 @@ export const consultCustomerByDocument = async (req: Request, res: Response) =>{
 
    if (customer.length > 0) {
        res.status(200).json({
-       customer
+        	customer
        })
    }
    else {
        res.status(404).json({
-           msg: `El cliente con el documento ${document_number} no existe`
+            msg: `El cliente con el documento ${document_number} no existe`
        })
    }
     
@@ -76,27 +72,19 @@ export const saveCustomer = async (req: Request, res: Response) => { //crear un 
         })
     }
 
-    const validateDocument = await Customer.findOne({
-        where: {
-            document_number
-        }
-    })
+    const validationDocument = await validateDocument(document_number, Customer)
 
-    if (validateDocument) {
-        return res.status(200).json({
-            msg: `El numero de documento ${document_number} ya está registrado`
+    if (!validationDocument) {
+        return res.status(400).json({
+            msg: `El numero de documento ${document_number} ya está en uso`
         })
     }
 
-    const validateEmail = await Customer.findOne({
-        where: {
-            email
-        }
-    })
+    const validationEmail = await validateEmail(email, Customer)
 
-    if (validateEmail) {
+    if (validationEmail) {
         return res.status(200).json({
-            msg: `El correo electrónico ${email} ya está en uso`
+            msg: validationEmail
         })
     }
 
@@ -109,46 +97,26 @@ export const saveCustomer = async (req: Request, res: Response) => { //crear un 
 
 export const modifyCustomer = async(req: Request, res: Response) => { //modificar los datos de un cliente
 
+    const { id } = req.params
     const { name, document_number, email, state } = req.body;
+    
+    const validationId = await Customer.findByPk(id)
 
-    const validateDocument = await Customer.findOne({
+    if (!validationId) {
+        return res.status(200).json({
+            msg: `El id ${id} no existe`
+        })
+    }
+    
+    const user = await Customer.update({ name, document_number, email, state }, {
         where: {
-            document_number
+            id
         }
     })
 
-    if (validateDocument) {
-
-        const validateEmail = await Customer.findOne({
-            where: {
-                email
-            }
-        })
-    
-        if (validateEmail) {
-            return res.status(200).json({
-                msg: `El correo electrónico ${email} no está disponible`
-            })
-        }
-        else {
-            const customer = await Customer.update({ name, email, state }, 
-                {
-                    where: {
-                        document_number
-                    }
-                })
-            res.status(200).json({
-                msg: `La cuenta ha sido modificada correctamente`
-            })
-        }  
-    } 
-    else {
-        res.status(200).json({
-            msg: `El numero de documento ${document_number} no se encuentra registrado`
-        })
-    }
-
-    
+    res.status(200).json({
+        msg: `Los datos fueron modificados`
+    })
 }
 
 
@@ -156,11 +124,7 @@ export const deleteCustomer = async(req: Request, res: Response) => { //Eliminar
 
     const { id } = req.params;
 
-    const validateId = await Customer.findOne({
-        where: {
-            id
-        }
-    })
+    const validateId = await Customer.findByPk(id)
 
     if (!validateId) {
         return res.status(200).json({

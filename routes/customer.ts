@@ -6,7 +6,7 @@ router.get('/consultar-clientes', consultCustomer);
 router.get('/consultar-clientes-activos', consultActiveCustomer);
 router.get('/consultar-cliente-por-documento/:document_number', consultCustomerByDocument);
 router.post('/guardar-clientes', saveCustomer);
-router.put('/modificar-cliente', modifyCustomer);
+router.put('/modificar-cliente/:id', modifyCustomer);
 router.delete('/eliminar-cliente/:id', deleteCustomer);
 
 router.get('*', (req, res) => {

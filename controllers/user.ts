@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import User from '../models/user';
 import Rol from '../models/rol';
+import { validateNameUser, validateEmail} from '../helpers/validations';
 
 
 export const consultUser = async (req: Request, res: Response) =>{
@@ -73,33 +74,25 @@ export const saveUser = async (req: Request, res: Response) =>{ //creacion de us
         return res.status(200).json({
             msg: `Por favor rellene todos los campos`
         })        
-    }
-     
-    
+    }   
 
-    // const validateNameUser = await User.findOne({
-    //     where: {
-    //         nameUser
-    //     }
-    // })
+    let validationNameUser = await validateNameUser(nameUser, User)
 
-    // if (validateNameUser) {
-    //     return res.status(200).json({
-    //         msg: `El nombre de usuario ${nameUser} no está disponible`
-    //     })
-    // }
-
-    const validateEmail = await User.findOne({
-        where: {
-            email
-        }
-    })
-
-    if (validateEmail) {
-        return res.status(200).json({
-            msg: `El correo electrónico ${email} no está disponible`
+    if (validationNameUser) {
+        return res.status(400).json({
+            msg: validationNameUser
         })
     }
+
+
+    let validationEmail = await validateEmail(email, User)
+
+    if (validationEmail) {
+        return res.status(200).json({
+            msg: validationEmail
+        })
+    }
+
 
     if (password.length < 8) {
         return res.status(200).json({
@@ -110,9 +103,10 @@ export const saveUser = async (req: Request, res: Response) =>{ //creacion de us
     const salt = bcrypt.genSaltSync();
     password =  bcrypt.hashSync(password, salt);
 
+
     if (id_rol == 0 || id_rol > 2) {
         return res.status(200).json({
-            msg: `El rol que está asignando no existe`
+            msg: `El rol que está asignando no existe ${id_rol.typeOf}`
         })
     }
 
@@ -134,19 +128,14 @@ export const updatePassword = async (req: Request, res: Response) => { //cambio 
             msg: `Por favor rellene ambos campos`
         })
     }
+ 
+    let validationNameUser = await validateNameUser(nameUser, User)
 
-    
-    // const validateNameUser = await User.findOne({
-    //     where: {
-    //         nameUser
-    //     }
-    // })
-
-    // if (!validateNameUser) {
-    //     return res.status(200).json({
-    //         msg: `El nombre de usuario ${nameUser} no existe`
-    //     })
-    // }
+    if (!validationNameUser) {
+        return res.status(400).json({
+            msg: `El nombre de usuario ${nameUser} no existe`
+        })
+    }
 
     if (password.length < 8) {
         return res.status(200).json({
@@ -203,23 +192,28 @@ export const assignRol = async (req: Request, res: Response) => { //asignación 
 
 export const modifyData = async (req: Request, res: Response) => { //modificación de datos de un admin a gestores
 
+    const { id } = req.params;
     const { names, nameUser, email, password, state, id_rol } = req.body; 
 
-    const validateNameUser = await User.findOne({
-        where: {
-            nameUser
-        }
-    })
-
-    if (!validateNameUser) {
+    const validationId = await User.findByPk(id)
+    
+    if (!validationId) {
         return res.status(200).json({
-            msg: `El nombre de usuario ${nameUser} no existe`
+            msg: `El usuario con el id ${id} no existe`
+        })    
+    }
+
+    const validationNameUser = await validateNameUser(nameUser, User)
+
+    if (validationNameUser) {
+        return res.status(200).json({
+            msg: `El nombre de usuario ${nameUser} ya existe`
         })
     }
 
-    const user = await User.update({ names, email, password, state, id_rol }, {
+    const user = await User.update({ names, nameUser, email, password, state, id_rol }, {
         where: {
-            nameUser
+            id
         }
     })
 
@@ -232,11 +226,7 @@ export const deleteUser = async (req:Request, res: Response) => {
 
     const { id } = req.params;
     
-    const validateId = await User.findOne({
-        where: {
-            id
-        }
-    })
+    const validateId = await User.findByPk(id);
 
     if (!validateId) {
         return res.status(200).json({

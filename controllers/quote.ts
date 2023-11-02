@@ -81,15 +81,15 @@ export const consultQuoteById = async (req: Request, res: Response) => {
 export const saveQuote = async (req: Request, res: Response) => {
 
     let { numeration, 
-            shipping_price,  
-            state, 
-            amount_discount, 
-            porcentage_discount,
-            total,
-            id_product, 
-            id_user,
-            id_customer 
-        } = req.body;
+        shipping_price,  
+        state, 
+        amount_discount, 
+        porcentage_discount,
+        total,
+        id_product, 
+        id_user,
+        id_customer 
+    } = req.body;
     
 
 
