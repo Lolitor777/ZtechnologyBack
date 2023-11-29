@@ -49,3 +49,9 @@ export const login = async (req: Request, res: Response) => {
         
     }
 }
+
+export const logout = (req:Request, res: Response) => {
+  return res.status(200).json({
+    msg: 'Se ha cerrado sesión correctamente'
+  })
+}

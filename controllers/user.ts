@@ -12,7 +12,10 @@ export const consultUser = async (req: Request, res: Response) =>{
         include: [{
             model: Rol,
             attributes: ['name']
-        }]
+        }],
+        where: {
+            state: 1
+        }
     });
     
     res.status(200).json({
@@ -40,9 +43,9 @@ export const consultActiveUser = async (req: Request, res: Response) =>{
     })
 }
 
-export const consultUserByNameUser = async (req: Request, res: Response) =>{ //buscar por nombre de usuario
+export const consultUserById = async (req: Request, res: Response) =>{ //buscar por nombre de usuario
 
-    const { nameUser } = req.params;
+    const { id } = req.params;
     const user = await User.findAll({
         attributes: ['id', 'names', 'nameUser', 'email', 'password', 'state'],
         include: [{
@@ -50,7 +53,7 @@ export const consultUserByNameUser = async (req: Request, res: Response) =>{ //b
             attributes: ['name']
         }],
         where: {
-            nameUser
+            id
         }
     });
 
@@ -60,55 +63,19 @@ export const consultUserByNameUser = async (req: Request, res: Response) =>{ //b
         })
     }
     else {
-        res.status(200).json({
-            msg: `El usuario con el nombre ${nameUser} no existe`
+        res.status(400).json({
+            msg: `El usuario con el id ${id} no existe`
         })
     }
 }
 
 export const saveUser = async (req: Request, res: Response) =>{ //creacion de usuarios
         
-    let { names, nameUser, email, password, id_rol } = req.body;
+    let { names, nameUser, email, password } = req.body;
     
-    if (!names || !nameUser || !email || !password || !id_rol) {
-        return res.status(200).json({
-            msg: `Por favor rellene todos los campos`
-        })        
-    }   
-
-    let validationNameUser = await validateNameUser(nameUser, User)
-
-    if (validationNameUser) {
-        return res.status(400).json({
-            msg: validationNameUser
-        })
-    }
-
-
-    let validationEmail = await validateEmail(email, User)
-
-    if (validationEmail) {
-        return res.status(200).json({
-            msg: validationEmail
-        })
-    }
-
-
-    if (password.length < 8) {
-        return res.status(200).json({
-            msg: `Por favor digite una contraseña que contenga 8 dígitos o más`
-        })
-    }
-
+    const id_rol = 1;
     const salt = bcrypt.genSaltSync();
     password =  bcrypt.hashSync(password, salt);
-
-
-    if (id_rol == 0 || id_rol > 2) {
-        return res.status(200).json({
-            msg: `El rol que está asignando no existe ${id_rol.typeOf}`
-        })
-    }
 
     const user = await User.create({ names, nameUser, email, password, id_rol });
 
@@ -121,34 +88,14 @@ export const saveUser = async (req: Request, res: Response) =>{ //creacion de us
 
 export const updatePassword = async (req: Request, res: Response) => { //cambio de contrasenia de un usuario
 
-    let {nameUser, password} = req.body;
-
-    if(!nameUser || !password){
-        return res.status(200).json({
-            msg: `Por favor rellene ambos campos`
-        })
-    }
+    let {id, password} = req.body;
  
-    let validationNameUser = await validateNameUser(nameUser, User)
-
-    if (!validationNameUser) {
-        return res.status(400).json({
-            msg: `El nombre de usuario ${nameUser} no existe`
-        })
-    }
-
-    if (password.length < 8) {
-        return res.status(200).json({
-            msg: `Por favor digite una contraseña que contenga 8 dígitos o más`
-        })
-    }
-
     const salt = bcrypt.genSaltSync();
     password =  bcrypt.hashSync(password, salt);
 
     const user = await User.update({ password },{ 
         where: {
-            nameUser
+            id
         }
     })
 
@@ -192,26 +139,10 @@ export const assignRol = async (req: Request, res: Response) => { //asignación 
 
 export const modifyData = async (req: Request, res: Response) => { //modificación de datos de un admin a gestores
 
-    const { id } = req.params;
-    const { names, nameUser, email, password, state, id_rol } = req.body; 
+    const {id, names, nameUser, email } = req.body; 
 
-    const validationId = await User.findByPk(id)
-    
-    if (!validationId) {
-        return res.status(200).json({
-            msg: `El usuario con el id ${id} no existe`
-        })    
-    }
-
-    const validationNameUser = await validateNameUser(nameUser, User)
-
-    if (validationNameUser) {
-        return res.status(200).json({
-            msg: `El nombre de usuario ${nameUser} ya existe`
-        })
-    }
-
-    const user = await User.update({ names, nameUser, email, password, state, id_rol }, {
+    const id_rol = 1;
+    const user = await User.update({ names, nameUser, email, id_rol }, {
         where: {
             id
         }
@@ -225,14 +156,6 @@ export const modifyData = async (req: Request, res: Response) => { //modificaci�
 export const deleteUser = async (req:Request, res: Response) => {
 
     const { id } = req.params;
-    
-    const validateId = await User.findByPk(id);
-
-    if (!validateId) {
-        return res.status(200).json({
-            msg: `El usuario con el id ${id} no existe`
-        })
-    }
       
     const state = 0;
     await User.update({ state }, {
@@ -242,7 +165,7 @@ export const deleteUser = async (req:Request, res: Response) => {
     })
 
     res.status(200).json({
-        msg: `El usuario ha sido eliminado `
+        msg: `El usuario con el id ${id} ha sido eliminado `
     })
 }
 

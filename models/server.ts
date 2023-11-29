@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express, { Application }  from 'express';
 import db from '../db/conection';
+import cors from 'cors';
 
 import userRoutes from '../routes/user';
 import customerRoutes from '../routes/customer';
@@ -41,6 +42,7 @@ class Server {
     middlewares() {
         //lectura y parseo del body
         this.app.use(express.json());
+        this.app.use(cors());
     }
 
     routes() {

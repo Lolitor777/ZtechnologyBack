@@ -30,22 +30,14 @@ export const consultActiveCustomer = async (req: Request, res: Response) =>{ //c
     })
 }
 
-export const consultCustomerByDocument = async (req: Request, res: Response) =>{ // consultar cliente por numero de documento
+export const consultCustomerById = async (req: Request, res: Response) =>{ // consultar cliente por ID
 
-    const { document_number } = req.params;
-
-    const validationDocument = await validateDocument(document_number, Customer)
-
-    if (validationDocument) {
-        return res.status(400).json({
-            msg: validationDocument
-        })
-    }
+    const { id } = req.params;
 
     const customer = await Customer.findAll({     
         attributes: ['id', 'name', 'document_number', 'email', 'state'], 
        where: {
-           document_number
+           id
        }
    });
 
@@ -56,7 +48,7 @@ export const consultCustomerByDocument = async (req: Request, res: Response) =>{
    }
    else {
        res.status(404).json({
-            msg: `El cliente con el documento ${document_number} no existe`
+            msg: `El cliente con el documento ${id} no existe`
        })
    }
     
@@ -65,28 +57,6 @@ export const consultCustomerByDocument = async (req: Request, res: Response) =>{
 export const saveCustomer = async (req: Request, res: Response) => { //crear un cliente
 
     let { name, document_number, email } = req.body;
-
-    if (!name || !document_number || !email) {
-        return res.status(200).json({
-            msg: `Por favor rellene todos los campos`
-        })
-    }
-
-    const validationDocument = await validateDocument(document_number, Customer)
-
-    if (!validationDocument) {
-        return res.status(400).json({
-            msg: `El numero de documento ${document_number} ya está en uso`
-        })
-    }
-
-    const validationEmail = await validateEmail(email, Customer)
-
-    if (validationEmail) {
-        return res.status(200).json({
-            msg: validationEmail
-        })
-    }
 
     const customer = await Customer.create({ name, document_number, email});  
 
@@ -97,8 +67,7 @@ export const saveCustomer = async (req: Request, res: Response) => { //crear un 
 
 export const modifyCustomer = async(req: Request, res: Response) => { //modificar los datos de un cliente
 
-    const { id } = req.params
-    const { name, document_number, email, state } = req.body;
+    const {id, name, document_number, email, state } = req.body;
     
     const validationId = await Customer.findByPk(id)
 
@@ -123,14 +92,6 @@ export const modifyCustomer = async(req: Request, res: Response) => { //modifica
 export const deleteCustomer = async(req: Request, res: Response) => { //Eliminar un cliente
 
     const { id } = req.params;
-
-    const validateId = await Customer.findByPk(id)
-
-    if (!validateId) {
-        return res.status(200).json({
-            msg: `El cliente con el id ${id} no existe`
-        })
-    }
 
     const state = 0; 
     Customer.update({ state }, {

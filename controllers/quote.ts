@@ -91,8 +91,6 @@ export const saveQuote = async (req: Request, res: Response) => {
         id_customer 
     } = req.body;
     
-
-
     const quote = await Quote.create({ numeration, shipping_price, state, amount_discount, porcentage_discount, total, 
         id_product, id_user, id_customer });
 
@@ -134,8 +132,8 @@ export const modifyQuote = async (req: Request, res: Response) => {
 export const deleteQuote = async(req: Request, res: Response) => {
 
     const { id } = req.params;
-    const state = 0;
     
+    const state = 0;
     Quote.update({ state }, {
         where: {
             id

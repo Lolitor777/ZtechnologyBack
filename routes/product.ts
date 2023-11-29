@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { consultActiveProduct, consultProduct, consultProductByCode, deleteProduct, modifyProduct, saveProduct } from '../controllers/product';
+import { consultActiveProduct, consultProduct, consultProductById, deleteProduct, modifyProduct, saveProduct } from '../controllers/product';
 const router = Router();
 
 router.get('/consultar-productos', consultProduct);
 router.get('/consultar-productos-activos', consultActiveProduct);
-router.get('/consultar-producto-por-codigo/:code', consultProductByCode);
+router.get('/consultar-producto-por-id/:id', consultProductById);
 router.post('/guardar-productos', saveProduct);
 router.put('/modificar-producto', modifyProduct);
 router.delete('/eliminar-producto/:id', deleteProduct)

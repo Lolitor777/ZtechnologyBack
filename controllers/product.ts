@@ -29,13 +29,13 @@ export const consultActiveProduct = async (req: Request, res: Response) =>{ //co
     })
 }
 
-export const consultProductByCode = async (req: Request, res: Response) => { //consultar producto por código
+export const consultProductById = async (req: Request, res: Response) => { //consultar producto por código
 
-    const { code } = req.params;
+    const { id } = req.params;
 
     const product = await Product.findAll({
         where: {
-            code
+            id
         }
     })
 
@@ -46,7 +46,7 @@ export const consultProductByCode = async (req: Request, res: Response) => { //c
     }
     else{
         res.status(404).json({
-            msg: `El producto con el código ${code} no existe aún`
+            msg: `El producto con el código ${id} no existe aún`
         })
     }
 }
@@ -64,32 +64,17 @@ export const saveProduct = async (req:Request, res: Response) => { //crear un pr
 
 export const modifyProduct = async (req: Request, res: Response) => { //modificar un producto
 
-    const { type, description, code, price, amount, state } = req.body;
-
-    const validCode = await Product.findOne({
+    const { id, type, description, code, price, amount, state } = req.body;
+    
+    const product = await Product.update({ type, description, price, amount, state },{
         where: {
-            code
+            id
         }
     })
     
-    if (validCode) {
-        const product = await Product.update({ type, description, price, amount, state },
-            {
-                where: {
-                    code
-                }
-            })
-    
-        res.status(200).json({
-            msg: `El producto se ha modificado con éxito`
-        })
-    }
-    else {
-        res.status(200).json({
-            msg: `El codigo del producto no está registrado`
-        })
-    }
-
+    res.status(200).json({
+        msg: `El producto se ha modificado con éxito`
+    })
     
 }
 
@@ -97,18 +82,6 @@ export const modifyProduct = async (req: Request, res: Response) => { //modifica
 export const deleteProduct = async(req: Request, res: Response) => { //eliminar un producto
 
     const { id } = req.params;
-    
-    const validateId = await Product.findOne({
-        where: {
-            id
-        }
-    })
-
-    if (!validateId) {
-        return res.status(200).json({
-            msg: `El producto con el id ${id} no existe`
-        })
-    }
     
     const state = 0;
     Product.update({ state }, {
