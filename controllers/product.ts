@@ -5,7 +5,10 @@ import Product from '../models/product';
 export const consultProduct = async (req: Request, res: Response) =>{ //consultar todos los productos
 
     const product = await Product.findAll({
-        attributes: ['id', 'type', 'description', 'code', 'price', 'amount', 'state']
+        attributes: ['id', 'type', 'description', 'code', 'price', 'amount', 'state'],
+        where: {
+            state: 1
+        }
     });
 
     res.status(200).json({
@@ -29,24 +32,20 @@ export const consultActiveProduct = async (req: Request, res: Response) =>{ //co
     })
 }
 
-export const consultProductById = async (req: Request, res: Response) => { //consultar producto por código
+export const consultProductById = async (req: Request, res: Response) => { //consultar producto por id
 
     const { id } = req.params;
 
-    const product = await Product.findAll({
-        where: {
-            id
-        }
-    })
+    const product = await Product.findByPk(id)
 
-    if (product.length > 0) {
+    if (product) {
         res.status(200).json({
             product
         })
     }
     else{
         res.status(404).json({
-            msg: `El producto con el código ${id} no existe aún`
+            msg: `El producto con el id ${id} no existe aún`
         })
     }
 }
@@ -64,9 +63,9 @@ export const saveProduct = async (req:Request, res: Response) => { //crear un pr
 
 export const modifyProduct = async (req: Request, res: Response) => { //modificar un producto
 
-    const { id, type, description, code, price, amount, state } = req.body;
+    const { id, type, description, price, amount} = req.body;
     
-    const product = await Product.update({ type, description, price, amount, state },{
+    const product = await Product.update({ type, description, price, amount},{
         where: {
             id
         }

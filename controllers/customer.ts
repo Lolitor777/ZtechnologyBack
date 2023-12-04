@@ -6,6 +6,9 @@ export const consultCustomer = async (req: Request, res: Response) =>{  //consul
 
     const customer = await Customer.findAll({
         attributes: ['id', 'name', 'document_number', 'email', 'state'],
+        where: {
+            state: 1
+        }
         
     });
 
@@ -34,14 +37,9 @@ export const consultCustomerById = async (req: Request, res: Response) =>{ // co
 
     const { id } = req.params;
 
-    const customer = await Customer.findAll({     
-        attributes: ['id', 'name', 'document_number', 'email', 'state'], 
-       where: {
-           id
-       }
-   });
+    const customer = await Customer.findByPk(id)
 
-   if (customer.length > 0) {
+   if (customer) {
        res.status(200).json({
         	customer
        })

@@ -55,3 +55,23 @@ export const logout = (req:Request, res: Response) => {
     msg: 'Se ha cerrado sesión correctamente'
   })
 }
+
+export const validateToken = async (req:Request, res: Response) => {
+  const {id} = req.body;
+  console.log('id', id);
+ 
+  const user = await User.findByPk(id);
+
+  if (!user) {
+    return res.status(200).json({
+      user,
+      msg: 'Usuario no existe'
+    })
+  }
+
+  return res.status(200).json({
+    user,
+    msg: 'Validación completada'
+  })
+  
+}

@@ -46,18 +46,9 @@ export const consultActiveUser = async (req: Request, res: Response) =>{
 export const consultUserById = async (req: Request, res: Response) =>{ //buscar por nombre de usuario
 
     const { id } = req.params;
-    const user = await User.findAll({
-        attributes: ['id', 'names', 'nameUser', 'email', 'password', 'state'],
-        include: [{
-            model: Rol,
-            attributes: ['name']
-        }],
-        where: {
-            id
-        }
-    });
+    const user = await User.findByPk(id);
 
-    if (user.length > 0) {
+    if (user) {
         res.status(200).json({
             user
         })
@@ -71,9 +62,8 @@ export const consultUserById = async (req: Request, res: Response) =>{ //buscar 
 
 export const saveUser = async (req: Request, res: Response) =>{ //creacion de usuarios
         
-    let { names, nameUser, email, password } = req.body;
+    let { names, nameUser, email, password, id_rol} = req.body;
     
-    const id_rol = 1;
     const salt = bcrypt.genSaltSync();
     password =  bcrypt.hashSync(password, salt);
 
@@ -139,10 +129,9 @@ export const assignRol = async (req: Request, res: Response) => { //asignación 
 
 export const modifyData = async (req: Request, res: Response) => { //modificación de datos de un admin a gestores
 
-    const {id, names, nameUser, email } = req.body; 
+    const {id, names, nameUser, email, password, id_rol } = req.body; 
 
-    const id_rol = 1;
-    const user = await User.update({ names, nameUser, email, id_rol }, {
+    const user = await User.update({ names, nameUser, email, password, id_rol }, {
         where: {
             id
         }

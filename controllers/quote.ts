@@ -59,14 +59,9 @@ export const consultActiveQuote = async (req: Request, res: Response) =>{
 export const consultQuoteById = async (req: Request, res: Response) => {
 
     const { id } = req.params;
-    
-    const quote = await Quote.findAll({
-        where: {
-            id
-        }
-    })
+    const quote = await Quote.findByPk(id)
 
-    if (quote.length > 0) {
+    if (quote) {
         res.status(200).json({
             quote
         })
@@ -80,9 +75,8 @@ export const consultQuoteById = async (req: Request, res: Response) => {
 
 export const saveQuote = async (req: Request, res: Response) => {
 
-    let { numeration, 
-        shipping_price,  
-        state, 
+    let {
+        shipping_price,   
         amount_discount, 
         porcentage_discount,
         total,
@@ -91,23 +85,19 @@ export const saveQuote = async (req: Request, res: Response) => {
         id_customer 
     } = req.body;
     
-    const quote = await Quote.create({ numeration, shipping_price, state, amount_discount, porcentage_discount, total, 
+    const quote = await Quote.create({ shipping_price, amount_discount, porcentage_discount, total, 
         id_product, id_user, id_customer });
 
     res.status(200).json({
-        msg: `La cotización número ${numeration} se ha creado exitosamente`
+        msg: `La cotización se ha creado exitosamente`
     })
 }
 
 export const modifyQuote = async (req: Request, res: Response) => {
 
     const { 
-            id,
-            numeration, 
+            id, 
             shipping_price, 
-            sub_total, 
-            total, 
-            state, 
             amount_discount, 
             porcentage_discount, 
             id_product, 
@@ -115,7 +105,7 @@ export const modifyQuote = async (req: Request, res: Response) => {
             id_customer 
         } = req.body;
 
-    const quote = await Quote.update({ numeration, shipping_price, sub_total, total, state, amount_discount, porcentage_discount, 
+    const quote = await Quote.update({ shipping_price, amount_discount, porcentage_discount, 
         id_product, id_user, id_customer }, 
         {
             where:{
@@ -126,7 +116,6 @@ export const modifyQuote = async (req: Request, res: Response) => {
     res.status(200).json({
         msg: `La cotización se ha modificado exitosamente`
     })
-
 }
 
 export const deleteQuote = async(req: Request, res: Response) => {
